@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from djmoney.contrib.django_rest_framework import MoneyField
 
-from pos.models import Order, OrderProduct, CustomUser
+from pos.models import Order, OrderProduct, CustomUser, Product
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,13 +13,23 @@ class UserSerializer(serializers.ModelSerializer):
 #         model = Customer
 #         fields = ['name']
 
-# class ProductSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Product
-#         fields = ['name']
+class ProductSerializer(serializers.ModelSerializer):
+    """
+    Creating a product serializer even though right now the only field is 'name'
+    makes the code scalable in the long term. It also allows for overriding the 
+    create method.
+    """
+
+    def create(self, validated_data):
+        obj, created = Product.objects.get_or_create(**validated_data)
+        return obj
+
+    class Meta:
+        model = Product
+        fields = ['name']
 
 class OrderProductSerializer(serializers.ModelSerializer):
-    product = serializers.StringRelatedField
+    product = ProductSerializer
 
 
     class Meta:
