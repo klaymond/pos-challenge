@@ -1,12 +1,21 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 # This file can be used to create shared resources between applications
 
+class CustomUser(AbstractUser):
+    """
+    This should be used instead of the built-in User from Django. This is 
+    because of a requirement for users to have email as a unique identifier.
+    """
+    email = models.EmailField(unique=True)
+
 class BaseModel(models.Model):
     """
-    Base model that allows for additional tracking of creation and update of models.
-    All application models should inherit from this abstract model instead of models.Model.
+    Base model that allows for additional tracking of creation and update of 
+    models.
+    All application models should inherit from this abstract model instead of 
+    models.Model.
     """
 
     creation_date = models.DateTimeField(
@@ -15,11 +24,11 @@ class BaseModel(models.Model):
         auto_now=True, editable=False, null=True, verbose_name='Last Update Date')
 
     created_by = models.ForeignKey(
-        User, on_delete=models.PROTECT, null=True, related_name="+",
+        CustomUser, on_delete=models.PROTECT, null=True, related_name="+",
         editable=False, db_column="created_by", default=1,
     )
     last_updated_by = models.ForeignKey(
-        User, on_delete=models.PROTECT, null=True, related_name="+",
+        CustomUser, on_delete=models.PROTECT, null=True, related_name="+",
         editable=False, db_column="last_updated_by", default=1
     )
 

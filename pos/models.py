@@ -1,3 +1,6 @@
+from django.db import models
+from djmoney.models.fields import MoneyField
+
 from parrot.base import BaseModel
         
 class Customer(BaseModel):
@@ -8,23 +11,33 @@ class Customer(BaseModel):
     upgraded to users
     """
 
-    pass
+    name = models.CharField(max_length=75)
 
-class Order(BaseModel):
-    """
-    """
-
-    pass
+    def __str__(self):
+        return self.name
 
 class Product(BaseModel):
     """
     """
 
-    pass
+    name = models.CharField(max_length=200)   
+
+    def __str__(self):
+        return self.name 
+
+class Order(BaseModel):
+    """
+    """
+
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    products = models.ManyToManyField(Product, through="ProductInstance")
+
+    def __str__(self):
+        return f"Order number {self.pk} for {self.customer.name}"
 
 class ProductInstance(BaseModel):
     """
     """
-
-    pass
-    
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    price = MoneyField(max_digits=10, decimal_places=2, default_currency='MXN')
