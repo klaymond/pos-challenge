@@ -1,4 +1,3 @@
-from django.conf import settings
 """
 URL configuration for parrot project.
 
@@ -17,10 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from rest_framework import routers
+
+from pos import views
+
+router = routers.DefaultRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'orders', views.OrderViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
+    path('', include(router.urls)),
 ]
 
 # This adds the silk debugging tool for SQL query optimization. 

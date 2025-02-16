@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from djmoney.contrib.django_rest_framework import MoneyField
 
-from models import Customer, Product, Order, OrderProduct
-from pos.base import CustomUser
+from pos.models import Order, OrderProduct, CustomUser
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

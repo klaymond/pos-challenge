@@ -1,8 +1,7 @@
 from rest_framework import mixins, viewsets
-from pos.base import CustomUser
 
-from models import Customer, Product, Order, OrderProduct
-import serializers
+from pos.models import Order, CustomUser
+from pos import serializers
 
 class UserViewSet(mixins.CreateModelMixin,
                   mixins.ListModelMixin,
