@@ -1,3 +1,4 @@
+from django.conf import settings
 """
 URL configuration for parrot project.
 
@@ -21,3 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
 ]
+
+# This adds the silk debugging tool for SQL query optimization. 
+# The url is disabled in prod
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))] if settings.DEBUG else []
