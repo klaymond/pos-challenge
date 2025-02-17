@@ -1,4 +1,6 @@
 from rest_framework import mixins, viewsets
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from pos.models import Order, CustomUser
 from pos import serializers
@@ -11,6 +13,8 @@ class UserViewSet(mixins.CreateModelMixin,
     """
     Users cannot be updated per requirements.
     """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = CustomUser.objects.all()
     serializer_class = serializers.UserSerializer
 
@@ -28,5 +32,7 @@ class OrderViewSet(mixins.CreateModelMixin,
     """
     Orders cannot be updated or deleted
     """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = serializers.OrderSerializer
