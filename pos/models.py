@@ -45,6 +45,8 @@ class BaseModel(models.Model):
 
 class Product(BaseModel):
     """
+    Product only has a name for now. An order can contain multiple products and
+    in that order relationship price and quantities are defined.
     """
 
     name = models.CharField(max_length=200, unique=True)   
@@ -54,6 +56,11 @@ class Product(BaseModel):
 
 class Order(BaseModel):
     """
+    An order is assigned to a customer who is only a charfield for now. It
+    relates to Product in a many-to-many relationship. Each order can have one
+    customer and multiple products with arbitrary prices. There can be an 
+    arbitrary amount of said product with a certain price in an order. There can
+    also be multiple prices for a single product in an order.
     """
 
     customer_name = models.CharField(max_length=75)
@@ -73,7 +80,11 @@ class Order(BaseModel):
 
 class OrderProduct(BaseModel):
     """
+    Intermediate table that houses relationship between orders and products.
+    This is needed because of the added information in terms of price and 
+    quantity.
     """
+
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
     price = MoneyField(max_digits=10, decimal_places=2, default_currency='MXN')
