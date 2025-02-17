@@ -70,14 +70,18 @@ class Order(BaseModel):
     """
 
     customer_name = models.CharField(max_length=75)
-    products = models.ManyToManyField(Product, through="OrderProduct")
+    products = models.ManyToManyField(Product, through="OrderProduct", related_name='details')
 
     def __str__(self):
-        return f"Order number {self.pk} for {self.customer.name}"
+        return f"Order number {self.pk} for {self.customer_name}"
     
     @property
     def total(self):
-        return self.products.aggregate(Sum(F("orderproduct__price") * F("orderproduct__quantity")))
+        return self.products.aggregate(
+                total=Sum(
+                    F("orderproduct__price") * F("orderproduct__quantity")
+                    )
+            ).get("total")
     
 
 class OrderProduct(BaseModel):

@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.11.4-slim-buster
+FROM python:3.11.4-slim-buster as base
 
 # set work directory
 WORKDIR /usr/src/app
@@ -21,6 +21,7 @@ COPY ./entrypoint.sh .
 RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 
+FROM base as dev
 # copy project
 COPY . .
 

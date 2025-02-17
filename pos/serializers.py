@@ -1,6 +1,5 @@
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.encoding import smart_str
 from rest_framework import serializers
 from djmoney.contrib.django_rest_framework import MoneyField
 
@@ -27,47 +26,60 @@ class UserSerializer(serializers.ModelSerializer):
 #         model = Customer
 #         fields = ['name']
 
-# class ProductSerializer(serializers.ModelSerializer):
+
+
+# class CreatableSlugRelatedField(serializers.SlugRelatedField):
 #     """
-#     Creating a product serializer even though right now the only field is 'name'
-#     makes the code scalable in the long term. It also allows for overriding the 
-#     create method.
+#     This field allows for the name to be used as a SlugRelatedField for the
+#     product so it can be created in the same call as the order.
 #     """
-
-#     def create(self, validated_data):
-#         obj, created = Product.objects.get_or_create(**validated_data)
-#         return obj
-
-#     class Meta:
-#         model = Product
-#         fields = ['name']
-
-class CreatableSlugRelatedField(serializers.SlugRelatedField):
-    """
-    This field allows for the name to be used as a SlugRelatedField for the
-    product so it can be created in the same call as the order.
-    """
-    def to_internal_value(self, data):
-        try:
-            return self.get_queryset().get_or_create(**{self.slug_field: data})[0]
-        except ObjectDoesNotExist:
-            self.fail('does_not_exist', slug_name=self.slug_field, value=smart_str(data))
-        except (TypeError, ValueError):
-            self.fail('invalid')
+#     def to_internal_value(self, data):
+#         try:
+#             return self.get_queryset().get(**{self.slug_field: data})
+#         except ObjectDoesNotExist:
+#             return self.get_queryset().create(**{self.slug_field: data})
+#         except (TypeError, ValueError):
+#             self.fail('invalid')
 
 class OrderProductSerializer(serializers.ModelSerializer):
-    product = CreatableSlugRelatedField(
-        slug_field='name',
-        queryset=Product.objects.all(),
-    )
 
     class Meta:
         model = OrderProduct
-        fields = ['product', 'price', 'quantity']
+        fields = ['price', 'quantity']
+
+class ProductSerializer(serializers.ModelSerializer):
+    """
+    Creating a product serializer even though right now the only field is 'name'
+    makes the code scalable in the long term. It also allows for overriding the 
+    create method.
+    """
+
+    details = OrderProductSerializer(required=True, many=True)
+
+    # def create(self, validated_data):
+    #     print('hola')
+    #     print(validated_data)
+    #     obj, created = Product.objects.get_or_create(**validated_data)
+    #     return obj
+
+    class Meta:
+        model = Product
+        fields = ['name', 'details']
 
 class OrderSerializer(serializers.ModelSerializer):
-    products = OrderProductSerializer(many=True)
+    products = ProductSerializer(many=True)
     total = MoneyField(max_digits=10, decimal_places=2, read_only=True, required=False)
+
+    def create(self, validated_data):
+        order_product_data = validated_data.pop('products')
+        order = Order.objects.create(**validated_data)
+        for order_product in order_product_data:
+            product, _ = Product.objects.get_or_create(name=order_product.pop('name'))
+            OrderProduct.objects.create(order=order, product=product, **order_product.get('details')[0])
+        return order
+
+    def to_representation(self, instance):
+        return {"customer_name": instance.customer_name, "total": instance.total}
 
     class Meta:
         model = Order
