@@ -122,6 +122,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/Order'
           description: ''
+  /sales/:
+    get:
+      operationId: sales_retrieve
+      tags:
+      - sales
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /users/:
     get:
       operationId: users_list
@@ -215,7 +226,7 @@ components:
         products:
           type: array
           items:
-            $ref: '#/components/schemas/OrderProduct'
+            $ref: '#/components/schemas/Product'
         total:
           type: string
           format: decimal
@@ -228,20 +239,34 @@ components:
     OrderProduct:
       type: object
       properties:
-        product:
-          type: string
         price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         quantity:
           type: integer
-          maximum: 32767
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
       required:
       - price
-      - product
       - quantity
+    Product:
+      type: object
+      description: |-
+        Creating a product serializer even though right now the only field is 'name'
+        makes the code scalable in the long term. It also allows for overriding the
+        create method.
+      properties:
+        name:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderProduct'
+      required:
+      - details
+      - name
     TokenObtainPair:
       type: object
       properties:
@@ -293,8 +318,13 @@ components:
           type: string
           format: email
           maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          description: Leave empty if no change needed
       required:
       - email
+      - password
       - username
   securitySchemes:
     jwtAuth:

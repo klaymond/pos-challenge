@@ -42,19 +42,6 @@ class BaseModel(models.Model):
     def last_updated_by_name(self):
         if self.last_updated_by:
             return self.last_updated_by.get_full_name().strip() or self.last_updated_by.username
-              
-# class Customer(BaseModel):
-#     """
-#     This class represents a customer. For now customers don't have access to the
-#     API, therefore they are not considered users. If functionalities such as 
-#     online orders or loyalty systems are implemented then Customers should be 
-#     upgraded to users
-#     """
-
-#     name = models.CharField(max_length=75)
-
-#     def __str__(self):
-#         return self.name
 
 class Product(BaseModel):
     """

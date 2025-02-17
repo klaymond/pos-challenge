@@ -5,6 +5,11 @@ from djmoney.contrib.django_rest_framework import MoneyField
 
 from pos.models import Order, OrderProduct, CustomUser, Product
 
+class ParrotMoneyField(MoneyField):
+    
+    def __init__(self, **kwargs):
+        super().__init__(max_digits=10, decimal_places=2, **kwargs)
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -21,26 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
 
-# class CustomerSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Customer
-#         fields = ['name']
-
-
-
-# class CreatableSlugRelatedField(serializers.SlugRelatedField):
-#     """
-#     This field allows for the name to be used as a SlugRelatedField for the
-#     product so it can be created in the same call as the order.
-#     """
-#     def to_internal_value(self, data):
-#         try:
-#             return self.get_queryset().get(**{self.slug_field: data})
-#         except ObjectDoesNotExist:
-#             return self.get_queryset().create(**{self.slug_field: data})
-#         except (TypeError, ValueError):
-#             self.fail('invalid')
-
 class OrderProductSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -55,12 +40,7 @@ class ProductSerializer(serializers.ModelSerializer):
     """
 
     details = OrderProductSerializer(required=True, many=True)
-
-    # def create(self, validated_data):
-    #     print('hola')
-    #     print(validated_data)
-    #     obj, created = Product.objects.get_or_create(**validated_data)
-    #     return obj
+    name = serializers.CharField(validators=[])
 
     class Meta:
         model = Product
@@ -68,7 +48,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True)
-    total = MoneyField(max_digits=10, decimal_places=2, read_only=True, required=False)
+    total = ParrotMoneyField(read_only=True, required=False)
 
     def create(self, validated_data):
         order_product_data = validated_data.pop('products')
@@ -85,5 +65,10 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['customer_name', 'products', 'total']
 
-class ProductReportSerializer(serializers.ListSerializer):
-    pass
+class ProductReportSerializer(serializers.Serializer):
+    product_name = serializers.CharField(max_length=200)
+    quantity_sold = serializers.IntegerField()
+    total_price = ParrotMoneyField()
+
+class ProductReportListSerializer(serializers.ListSerializer):
+    products = ProductReportSerializer
