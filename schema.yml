@@ -122,17 +122,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Order'
           description: ''
-  /sales/:
+  /report/:
     get:
-      operationId: sales_retrieve
+      operationId: report_list
+      description: |-
+        Simple list view that returns a report detailing product earnings and
+        quantities sold. This report is cached for 2 hours since there is no use for
+        real time data. Ideally this view gets cached with new values after closing
+        the restaurant cash register.
       tags:
-      - sales
+      - report
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductReport'
+          description: ''
   /users/:
     get:
       operationId: users_list
@@ -219,6 +229,9 @@ components:
   schemas:
     Order:
       type: object
+      description: |-
+        Serializer ofr the order. This is the main point where the sales
+        functionalities interact with each other.
       properties:
         customer_name:
           type: string
@@ -238,6 +251,9 @@ components:
       - total
     OrderProduct:
       type: object
+      description: |-
+        Serializer for many-to-many relationship between orders and products. This
+        allows for price and quantity to be set for each product in the order.
       properties:
         price:
           type: string
@@ -254,9 +270,8 @@ components:
     Product:
       type: object
       description: |-
-        Creating a product serializer even though right now the only field is 'name'
-        makes the code scalable in the long term. It also allows for overriding the
-        create method.
+        Product serializer that allows for multiple prices and quantities to be
+        set for the same product in one go.
       properties:
         name:
           type: string
@@ -267,6 +282,25 @@ components:
       required:
       - details
       - name
+    ProductReport:
+      type: object
+      description: |-
+        Serializer that flattens a product so that it only has one quantity and one
+        total price. Used for reporting purposes
+      properties:
+        product_name:
+          type: string
+          maxLength: 200
+        quantity_sold:
+          type: integer
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - product_name
+      - quantity_sold
+      - total_price
     TokenObtainPair:
       type: object
       properties:
@@ -301,6 +335,7 @@ components:
       - refresh
     User:
       type: object
+      description: User serializer.
       properties:
         username:
           type: string
