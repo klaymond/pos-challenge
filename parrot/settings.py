@@ -81,14 +81,7 @@ WSGI_APPLICATION = 'parrot.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Heroku automatically configures the database variables.
 
 
 # Password validation
@@ -134,3 +127,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Change the user model to custom Parrot user
 AUTH_USER_MODEL = "pos.CustomUser"
+
+# Heroku settings
+import django_heroku
+django_heroku.settings(locals())
