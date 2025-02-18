@@ -2,6 +2,12 @@
   
 Code base to answer coding challenge for parrot interview. The code acts as a POS
 for a restaurant.  
+
+## Report endpoint
+The report endpoint uses query parameters to set start_date and end_date. Please call as follows:
+```bash
+{{baseUrl}}/report/?start_date=2025-02-14&end_date=2025-02-19
+```
   
 ## Testing
 Create a file called .env.dev in the root directory of the project and add the following test env variables:
